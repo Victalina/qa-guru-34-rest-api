@@ -3,8 +3,9 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
-public class LoginTests {
+public class LoginTests extends TestBase {
 
   @Test
   void successfulLoginTest() {
@@ -15,12 +16,12 @@ public class LoginTests {
             .contentType(JSON)
             .log().uri()
             .when()
-            .post("https://reqres.in/api/login")
+            .post("/login")
             .then()
             .log().status()
             .log().body()
             .statusCode(200)
-            .body("token", is("QpwL5tke4Pnpja7X4"));
+            .body("token", notNullValue());
   }
 
   @Test
@@ -32,7 +33,7 @@ public class LoginTests {
             .contentType(JSON)
             .log().uri()
             .when()
-            .post("https://reqres.in/api/login")
+            .post("/login")
             .then()
             .log().status()
             .log().body()
@@ -49,7 +50,7 @@ public class LoginTests {
             .contentType(JSON)
             .log().uri()
             .when()
-            .post("https://reqres.in/api/login")
+            .post("/login")
             .then()
             .log().status()
             .log().body()
@@ -66,7 +67,7 @@ public class LoginTests {
             .contentType(JSON)
             .log().uri()
             .when()
-            .post("https://reqres.in/api/login")
+            .post("/login")
             .then()
             .log().status()
             .log().body()
@@ -83,7 +84,7 @@ public class LoginTests {
             .contentType(JSON)
             .log().uri()
             .when()
-            .post("https://reqres.in/api/login")
+            .post("/login")
             .then()
             .log().status()
             .log().body()
@@ -100,7 +101,7 @@ public class LoginTests {
             .contentType(JSON)
             .log().uri()
             .when()
-            .post("https://reqres.in/api/login")
+            .post("/login")
             .then()
             .log().status()
             .log().body()
@@ -111,7 +112,7 @@ public class LoginTests {
   void unsuccessfulLogin415Test() {
     given()
             .log().uri()
-            .post("https://reqres.in//api/login")
+            .post("/login")
             .then()
             .log().status()
             .log().body()

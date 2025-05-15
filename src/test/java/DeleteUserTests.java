@@ -7,7 +7,7 @@ import static io.restassured.path.json.JsonPath.from;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-public class DeleteUserTests {
+public class DeleteUserTests extends TestBase {
 
   @Test
   void deleteUserTest() {
@@ -21,7 +21,7 @@ public class DeleteUserTests {
                     .contentType(JSON)
                     .log().uri()
                     .when()
-                    .post("https://reqres.in/api/users")
+                    .post("/users")
                     .then()
                     .log().status()
                     .log().body()
@@ -37,7 +37,7 @@ public class DeleteUserTests {
             .header("x-api-key", "reqres-free-v1")
             .log().uri()
             .when()
-            .delete("https://reqres.in/api/users/" + id)
+            .delete("/users/" + id)
             .then()
             .log().status()
             .log().body()

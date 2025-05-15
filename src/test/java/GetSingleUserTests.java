@@ -3,7 +3,7 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
-public class GetSingleUserTests {
+public class GetSingleUserTests extends TestBase {
 
   @Test
   void getSingleUserTest() {
@@ -11,7 +11,7 @@ public class GetSingleUserTests {
             .header("x-api-key", "reqres-free-v1")
             .log().uri()
             .when()
-            .get("https://reqres.in/api/users/2")
+            .get("/users/2")
             .then()
             .log().status()
             .log().body()
@@ -28,7 +28,7 @@ public class GetSingleUserTests {
             .header("x-api-key", "reqres-free-v1")
             .log().uri()
             .when()
-            .get("https://reqres.in/api/users/23")
+            .get("/users/23")
             .then()
             .log().status()
             .log().body()
