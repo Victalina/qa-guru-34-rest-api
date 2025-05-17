@@ -1,21 +1,25 @@
-import io.restassured.response.Response;
+package tests;
+
+import models.UserBodyModel;
+import models.UserResponseModel;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static io.restassured.path.json.JsonPath.from;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class DeleteUserTests extends TestBase {
 
   @Test
   void deleteUserTest() {
-    String name = "Tom";
-    String jod = "leader";
-    String userData = "{\"name\": \"" + name + "\", \"jod\": \"" + jod + "\"}";
-    Response response =
-            given()
+
+    UserBodyModel userData = new UserBodyModel();
+    userData.setName("Tom");
+    userData.setJob("leader");
+
+    UserResponseModel response = given()
                     .header("x-api-key", "reqres-free-v1")
                     .body(userData)
                     .contentType(JSON)
@@ -26,12 +30,13 @@ public class DeleteUserTests extends TestBase {
                     .log().status()
                     .log().body()
                     .statusCode(201)
-                    .body("name", is(name))
-                    .body("jod", is(jod))
-                    .body("id", notNullValue())
-                    .extract().response();
-    String json = response.asString();
-    int id = from(json).getInt("id");
+            .extract().as(UserResponseModel.class);
+
+    assertThat(response.getName(), is(userData.getName()));
+    assertThat(response.getJob(), is(userData.getJob()));
+    assertThat(response.getId(), notNullValue());
+
+    int id = response.getId();
 
     given()
             .header("x-api-key", "reqres-free-v1")

@@ -1,13 +1,17 @@
+package tests;
+
+import models.UserDataModel;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class GetSingleUserTests extends TestBase {
 
   @Test
   void getSingleUserTest() {
-    given()
+    UserDataModel response = given()
             .header("x-api-key", "reqres-free-v1")
             .log().uri()
             .when()
@@ -16,12 +20,14 @@ public class GetSingleUserTests extends TestBase {
             .log().status()
             .log().body()
             .statusCode(200)
-            .body("data.id", is(2))
-            .body("data.email", is("janet.weaver@reqres.in"))
-            .body("data.first_name", is("Janet"))
-            .body("data.last_name", is("Weaver"))
-            .body("data.avatar", is("https://reqres.in/img/faces/2-image.jpg"));
+            .extract().as(UserDataModel.class);
+    assertThat(response.getData().getId(), is(2));
+    assertThat(response.getData().getEmail(), is("janet.weaver@reqres.in"));
+    assertThat(response.getData().getFirstName(), is("Janet"));
+    assertThat(response.getData().getLastName(), is("Weaver"));
+    assertThat(response.getData().getAvatar(), is("https://reqres.in/img/faces/2-image.jpg"));
   }
+
   @Test
   void singleUserNotFoundTest() {
     given()

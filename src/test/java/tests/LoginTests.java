@@ -1,7 +1,13 @@
+package tests;
+
+import models.ErrorResponseModel;
+import models.LoginBodyModel;
+import models.LoginResponseModel;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -9,8 +15,12 @@ public class LoginTests extends TestBase {
 
   @Test
   void successfulLoginTest() {
-    String authData = "{\"email\": \"eve.holt@reqres.in\", \"password\": \"cityslicka\"}";
-    given()
+
+    LoginBodyModel authData = new LoginBodyModel();
+    authData.setEmail("eve.holt@reqres.in");
+    authData.setPassword("cityslicka");
+
+    LoginResponseModel response = given()
             .header("x-api-key", "reqres-free-v1")
             .body(authData)
             .contentType(JSON)
@@ -21,13 +31,18 @@ public class LoginTests extends TestBase {
             .log().status()
             .log().body()
             .statusCode(200)
-            .body("token", notNullValue());
+            .extract().as(LoginResponseModel.class);
+
+    assertThat(response.getToken(), notNullValue());
   }
 
   @Test
   void unsuccessfulLogin400Test() {
-    String authData = "";
-    given()
+    LoginBodyModel authData = new LoginBodyModel();
+    authData.setEmail("");
+    authData.setPassword("");
+
+    ErrorResponseModel response = given()
             .header("x-api-key", "reqres-free-v1")
             .body(authData)
             .contentType(JSON)
@@ -38,13 +53,19 @@ public class LoginTests extends TestBase {
             .log().status()
             .log().body()
             .statusCode(400)
-            .body("error", is("Missing email or username"));
+            .extract().as(ErrorResponseModel.class);
+
+    assertThat(response.getError(), is("Missing email or username"));
   }
 
   @Test
   void userNotFoundTest() {
-    String authData = "{\"email\": \"eve.holt1@reqres.in\", \"password\": \"cityslicka\"}";
-    given()
+
+    LoginBodyModel authData = new LoginBodyModel();
+    authData.setEmail("eve.holt1@reqres.in");
+    authData.setPassword("cityslicka");
+
+    ErrorResponseModel response = given()
             .header("x-api-key", "reqres-free-v1")
             .body(authData)
             .contentType(JSON)
@@ -55,13 +76,19 @@ public class LoginTests extends TestBase {
             .log().status()
             .log().body()
             .statusCode(400)
-            .body("error", is("user not found"));
+            .extract().as(ErrorResponseModel.class);
+
+    assertThat(response.getError(), is("user not found"));
   }
 
   @Test
   void missingPasswordTest() {
-    String authData = "{\"email\": \"eve.holt@reqres.in\"}";
-    given()
+
+    LoginBodyModel authData = new LoginBodyModel();
+    authData.setEmail("eve.holt1@reqres.in");
+    authData.setPassword("");
+
+    ErrorResponseModel response = given()
             .header("x-api-key", "reqres-free-v1")
             .body(authData)
             .contentType(JSON)
@@ -72,13 +99,20 @@ public class LoginTests extends TestBase {
             .log().status()
             .log().body()
             .statusCode(400)
-            .body("error", is("Missing password"));
+            .extract().as(ErrorResponseModel.class);
+
+    assertThat(response.getError(), is("Missing password"));
   }
 
   @Test
   void missingLoginTest() {
-    String authData = "{\"password\": \"cityslicka\"}";
-    given()
+
+    LoginBodyModel authData = new LoginBodyModel();
+
+    authData.setEmail("");
+    authData.setPassword("cityslicka");
+
+    ErrorResponseModel response = given()
             .header("x-api-key", "reqres-free-v1")
             .body(authData)
             .contentType(JSON)
@@ -89,7 +123,9 @@ public class LoginTests extends TestBase {
             .log().status()
             .log().body()
             .statusCode(400)
-            .body("error", is("Missing email or username"));
+            .extract().as(ErrorResponseModel.class);
+
+    assertThat(response.getError(), is("Missing email or username"));
   }
 
   @Test
