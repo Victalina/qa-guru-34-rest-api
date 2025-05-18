@@ -1,17 +1,26 @@
 package tests;
 
+import io.restassured.response.Response;
 import models.UserBodyModel;
 import models.UserResponseModel;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
-import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static specs.CreateUserSpec.createUserRequestSpec;
+import static specs.CreateUserSpec.createUserResponseSpec;
+import static specs.DeleteUserSpec.deleteUserRequestSpec;
+import static specs.DeleteUserSpec.deleteUserResponseSpec;
 
+@Tag("rest_api_tests")
 public class DeleteUserTests extends TestBase {
 
+  @DisplayName("Delete user")
   @Test
   void deleteUserTest() {
 
@@ -19,33 +28,29 @@ public class DeleteUserTests extends TestBase {
     userData.setName("Tom");
     userData.setJob("leader");
 
-    UserResponseModel response = given()
-                    .header("x-api-key", "reqres-free-v1")
+    UserResponseModel response1 = step("Make request - create user", () ->
+            given(createUserRequestSpec)
                     .body(userData)
-                    .contentType(JSON)
-                    .log().uri()
                     .when()
-                    .post("/users")
+                    .post()
                     .then()
-                    .log().status()
-                    .log().body()
-                    .statusCode(201)
-            .extract().as(UserResponseModel.class);
+                    .spec(createUserResponseSpec)
+                    .extract().as(UserResponseModel.class));
 
-    assertThat(response.getName(), is(userData.getName()));
-    assertThat(response.getJob(), is(userData.getJob()));
-    assertThat(response.getId(), notNullValue());
+    step("Check user creation response", () -> {
+      assertThat(response1.getName(), is(userData.getName()));
+      assertThat(response1.getJob(), is(userData.getJob()));
+      assertThat(response1.getId(), notNullValue());
+    });
 
-    int id = response.getId();
+    int id = response1.getId();
 
-    given()
-            .header("x-api-key", "reqres-free-v1")
-            .log().uri()
-            .when()
-            .delete("/users/" + id)
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(204);
+    Response response2 = step("Make request - delete user with " + id, () ->
+            given(deleteUserRequestSpec)
+                    .when()
+                    .delete("/" + id)
+                    .then()
+                    .spec(deleteUserResponseSpec)
+                    .extract().response());
   }
 }

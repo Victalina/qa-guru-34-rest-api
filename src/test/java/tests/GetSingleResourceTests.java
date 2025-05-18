@@ -1,45 +1,53 @@
 package tests;
 
+import io.restassured.response.Response;
 import models.ResourceDataModel;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static specs.GetResourceSpec.*;
 
+@Tag("rest_api_tests")
 public class GetSingleResourceTests extends TestBase {
 
+  @DisplayName("Get existing single resource")
   @Test
   void getSingleResourceTest() {
+    int id = 2;
 
-    ResourceDataModel response = given()
-            .header("x-api-key", "reqres-free-v1")
-            .log().uri()
-            .when()
-            .get("/unknown/2")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(200)
-            .extract().as(ResourceDataModel.class);
+    ResourceDataModel response = step("Make request with resource id = " + id, () ->
+            given(getResourceRequestSpec)
+                    .when()
+                    .get("/" + id)
+                    .then()
+                    .spec(getResourceResponseSpec)
+                    .extract().as(ResourceDataModel.class));
 
-    assertThat(response.getData().getId(), is(2));
-    assertThat(response.getData().getName(), is("fuchsia rose"));
-    assertThat(response.getData().getYear(), is(2001));
-    assertThat(response.getData().getColor(), is("#C74375"));
-    assertThat(response.getData().getPantoneValue(), is("17-2031"));
+    step("Check response", () -> {
+      assertThat(response.getData().getId(), is(2));
+      assertThat(response.getData().getName(), is("fuchsia rose"));
+      assertThat(response.getData().getYear(), is(2001));
+      assertThat(response.getData().getColor(), is("#C74375"));
+      assertThat(response.getData().getPantoneValue(), is("17-2031"));
+    });
   }
 
+  @DisplayName("Single resource not found")
   @Test
   void singleResourceNotFoundTest() {
-    given()
-            .header("x-api-key", "reqres-free-v1")
-            .log().uri()
-            .when()
-            .get("/unknown/23")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(404);
+    int id = 23;
+
+    Response response = step("Make request with resource id = " + id, () ->
+            given(getResourceRequestSpec)
+                    .when()
+                    .get("/" + id)
+                    .then()
+                    .spec(resourceNotFoundResponseSpec)
+                    .extract().response());
   }
 }

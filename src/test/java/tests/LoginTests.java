@@ -1,18 +1,24 @@
 package tests;
 
+import io.restassured.response.Response;
 import models.ErrorResponseModel;
 import models.LoginBodyModel;
 import models.LoginResponseModel;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
-import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static specs.LoginSpec.*;
 
+@Tag("rest_api_tests")
 public class LoginTests extends TestBase {
 
+  @DisplayName("Successful Login")
   @Test
   void successfulLoginTest() {
 
@@ -20,44 +26,39 @@ public class LoginTests extends TestBase {
     authData.setEmail("eve.holt@reqres.in");
     authData.setPassword("cityslicka");
 
-    LoginResponseModel response = given()
-            .header("x-api-key", "reqres-free-v1")
-            .body(authData)
-            .contentType(JSON)
-            .log().uri()
-            .when()
-            .post("/login")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(200)
-            .extract().as(LoginResponseModel.class);
+    LoginResponseModel response = step("Make request", () ->
+            given(loginRequestSpec)
+                    .body(authData)
+                    .when()
+                    .post()
+                    .then()
+                    .spec(loginResponseSpec)
+                    .extract().as(LoginResponseModel.class));
 
-    assertThat(response.getToken(), notNullValue());
+    step("Check response", () ->
+            assertThat(response.getToken(), notNullValue()));
   }
 
+  @DisplayName("Unsuccessful Login - Missing email and password")
   @Test
-  void unsuccessfulLogin400Test() {
+  void unsuccessfulLoginMissingEmailAndPasswordTest() {
     LoginBodyModel authData = new LoginBodyModel();
     authData.setEmail("");
     authData.setPassword("");
 
-    ErrorResponseModel response = given()
-            .header("x-api-key", "reqres-free-v1")
-            .body(authData)
-            .contentType(JSON)
-            .log().uri()
-            .when()
-            .post("/login")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(400)
-            .extract().as(ErrorResponseModel.class);
-
-    assertThat(response.getError(), is("Missing email or username"));
+    ErrorResponseModel response = step("Make request", () ->
+            given(loginRequestSpec)
+                    .body(authData)
+                    .when()
+                    .post()
+                    .then()
+                    .spec(loginResponseStatus400Spec)
+                    .extract().as(ErrorResponseModel.class));
+    step("Check response", () ->
+            assertThat(response.getError(), is("Missing email or username")));
   }
 
+  @DisplayName("Unsuccessful Login - User not found")
   @Test
   void userNotFoundTest() {
 
@@ -65,22 +66,19 @@ public class LoginTests extends TestBase {
     authData.setEmail("eve.holt1@reqres.in");
     authData.setPassword("cityslicka");
 
-    ErrorResponseModel response = given()
-            .header("x-api-key", "reqres-free-v1")
-            .body(authData)
-            .contentType(JSON)
-            .log().uri()
-            .when()
-            .post("/login")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(400)
-            .extract().as(ErrorResponseModel.class);
-
-    assertThat(response.getError(), is("user not found"));
+    ErrorResponseModel response = step("Make request", () ->
+            given(loginRequestSpec)
+                    .body(authData)
+                    .when()
+                    .post()
+                    .then()
+                    .spec(loginResponseStatus400Spec)
+                    .extract().as(ErrorResponseModel.class));
+    step("Check response", () ->
+            assertThat(response.getError(), is("user not found")));
   }
 
+  @DisplayName("Unsuccessful Login - Missing password")
   @Test
   void missingPasswordTest() {
 
@@ -88,22 +86,20 @@ public class LoginTests extends TestBase {
     authData.setEmail("eve.holt1@reqres.in");
     authData.setPassword("");
 
-    ErrorResponseModel response = given()
-            .header("x-api-key", "reqres-free-v1")
-            .body(authData)
-            .contentType(JSON)
-            .log().uri()
-            .when()
-            .post("/login")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(400)
-            .extract().as(ErrorResponseModel.class);
+    ErrorResponseModel response = step("Make request", () ->
+            given(loginRequestSpec)
+                    .body(authData)
+                    .when()
+                    .post()
+                    .then()
+                    .spec(loginResponseStatus400Spec)
+                    .extract().as(ErrorResponseModel.class));
 
-    assertThat(response.getError(), is("Missing password"));
+    step("Check response", () ->
+            assertThat(response.getError(), is("Missing password")));
   }
 
+  @DisplayName("Unsuccessful Login - Missing email")
   @Test
   void missingLoginTest() {
 
@@ -112,46 +108,41 @@ public class LoginTests extends TestBase {
     authData.setEmail("");
     authData.setPassword("cityslicka");
 
-    ErrorResponseModel response = given()
-            .header("x-api-key", "reqres-free-v1")
-            .body(authData)
-            .contentType(JSON)
-            .log().uri()
-            .when()
-            .post("/login")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(400)
-            .extract().as(ErrorResponseModel.class);
-
-    assertThat(response.getError(), is("Missing email or username"));
+    ErrorResponseModel response = step("Make request", () ->
+            given(loginRequestSpec)
+                    .body(authData)
+                    .when()
+                    .post()
+                    .then()
+                    .spec(loginResponseStatus400Spec)
+                    .extract().as(ErrorResponseModel.class));
+    step("Check response", () ->
+            assertThat(response.getError(), is("Missing email or username")));
   }
 
+  @DisplayName("Unsuccessful Login - Wrong request body")
   @Test
   void wrongBodyTest() {
     String authData = "%}";
-    given()
-            .header("x-api-key", "reqres-free-v1")
-            .body(authData)
-            .contentType(JSON)
-            .log().uri()
-            .when()
-            .post("/login")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(400);
+    Response response = step("Make request", () ->
+            given(loginRequestSpec)
+                    .body(authData)
+                    .when()
+                    .post()
+                    .then()
+                    .spec(loginResponseStatus400Spec)
+                    .extract().response());
   }
 
+  @DisplayName("Unsuccessful Login - Missing request body and ContentType")
   @Test
-  void unsuccessfulLogin415Test() {
-    given()
-            .log().uri()
-            .post("/login")
-            .then()
-            .log().status()
-            .log().body()
-            .statusCode(415);
+  void missingRequestBodyTest() {
+    Response response = step("Make request", () ->
+            given(loginRequestSpecWithoutContentType)
+                    .when()
+                    .post()
+                    .then()
+                    .spec(loginResponseStatus415Spec)
+                    .extract().response());
   }
 }
