@@ -45,7 +45,7 @@ public class DeleteUserTests extends TestBase {
 
     int id = response1.getId();
 
-    Response response2 = step("Make request - delete user with id " + id, () ->
+    Response response2 = step("Make request - delete user with id = " + id, () ->
             given(deleteUserRequestSpec)
                     .when()
                     .delete("/" + id)
