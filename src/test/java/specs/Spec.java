@@ -8,25 +8,21 @@ import static helpers.CustomAllureListener.withCustomTemplates;
 import static io.restassured.RestAssured.with;
 import static io.restassured.filter.log.LogDetail.BODY;
 import static io.restassured.filter.log.LogDetail.STATUS;
-import static io.restassured.http.ContentType.JSON;
 
-public class CreateUserSpec {
-  public static RequestSpecification createUserRequestSpec = with()
+public class Spec {
+  public static RequestSpecification requestSpec = with()
           .filter(withCustomTemplates())
           .header("x-api-key", "reqres-free-v1")
           .log().uri()
           .log().body()
-          .log().headers()
-          .contentType(JSON)
-          .basePath("/api/users");
+          .log().headers();
 
-  public static ResponseSpecification createUserResponseSpec = new ResponseSpecBuilder()
-          .expectStatusCode(201)
-          .log(STATUS)
-          .log(BODY)
-          .build();
+  public static ResponseSpecification responseSpecStatusCode(int statusCode) {
+    ResponseSpecification responseSpec = new ResponseSpecBuilder()
+            .expectStatusCode(statusCode)
+            .log(STATUS)
+            .log(BODY)
+            .build();
+    return responseSpec;
+  }
 }
-
-
-
-

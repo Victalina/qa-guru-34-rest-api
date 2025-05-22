@@ -10,10 +10,12 @@ import org.junit.jupiter.api.Test;
 
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
+import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static specs.LoginSpec.*;
+import static specs.Spec.requestSpec;
+import static specs.Spec.responseSpecStatusCode;
 
 @Tag("rest_api_tests")
 public class LoginTests extends TestBase {
@@ -22,17 +24,16 @@ public class LoginTests extends TestBase {
   @Test
   void successfulLoginTest() {
 
-    LoginBodyModel authData = new LoginBodyModel();
-    authData.setEmail("eve.holt@reqres.in");
-    authData.setPassword("cityslicka");
+    LoginBodyModel authData = new LoginBodyModel("eve.holt@reqres.in", "cityslicka");
 
     LoginResponseModel response = step("Make request", () ->
-            given(loginRequestSpec)
+            given(requestSpec)
                     .body(authData)
+                    .contentType(JSON)
                     .when()
-                    .post()
+                    .post("/login")
                     .then()
-                    .spec(loginResponseSpec)
+                    .spec(responseSpecStatusCode(200))
                     .extract().as(LoginResponseModel.class));
 
     step("Check response", () ->
@@ -42,17 +43,16 @@ public class LoginTests extends TestBase {
   @DisplayName("Unsuccessful Login - Missing email and password")
   @Test
   void unsuccessfulLoginMissingEmailAndPasswordTest() {
-    LoginBodyModel authData = new LoginBodyModel();
-    authData.setEmail("");
-    authData.setPassword("");
+    LoginBodyModel authData = new LoginBodyModel("", "");
 
     ErrorResponseModel response = step("Make request", () ->
-            given(loginRequestSpec)
+            given(requestSpec)
                     .body(authData)
+                    .contentType(JSON)
                     .when()
-                    .post()
+                    .post("/login")
                     .then()
-                    .spec(loginResponseStatus400Spec)
+                    .spec(responseSpecStatusCode(400))
                     .extract().as(ErrorResponseModel.class));
     step("Check response", () ->
             assertThat(response.getError(), is("Missing email or username")));
@@ -62,17 +62,16 @@ public class LoginTests extends TestBase {
   @Test
   void userNotFoundTest() {
 
-    LoginBodyModel authData = new LoginBodyModel();
-    authData.setEmail("eve.holt1@reqres.in");
-    authData.setPassword("cityslicka");
+    LoginBodyModel authData = new LoginBodyModel("eve.holt1@reqres.in", "cityslicka");
 
     ErrorResponseModel response = step("Make request", () ->
-            given(loginRequestSpec)
+            given(requestSpec)
                     .body(authData)
+                    .contentType(JSON)
                     .when()
-                    .post()
+                    .post("/login")
                     .then()
-                    .spec(loginResponseStatus400Spec)
+                    .spec(responseSpecStatusCode(400))
                     .extract().as(ErrorResponseModel.class));
     step("Check response", () ->
             assertThat(response.getError(), is("user not found")));
@@ -82,17 +81,16 @@ public class LoginTests extends TestBase {
   @Test
   void missingPasswordTest() {
 
-    LoginBodyModel authData = new LoginBodyModel();
-    authData.setEmail("eve.holt1@reqres.in");
-    authData.setPassword("");
+    LoginBodyModel authData = new LoginBodyModel("eve.holt1@reqres.in", "");
 
     ErrorResponseModel response = step("Make request", () ->
-            given(loginRequestSpec)
+            given(requestSpec)
                     .body(authData)
+                    .contentType(JSON)
                     .when()
-                    .post()
+                    .post("/login")
                     .then()
-                    .spec(loginResponseStatus400Spec)
+                    .spec(responseSpecStatusCode(400))
                     .extract().as(ErrorResponseModel.class));
 
     step("Check response", () ->
@@ -103,18 +101,16 @@ public class LoginTests extends TestBase {
   @Test
   void missingLoginTest() {
 
-    LoginBodyModel authData = new LoginBodyModel();
-
-    authData.setEmail("");
-    authData.setPassword("cityslicka");
+    LoginBodyModel authData = new LoginBodyModel("", "cityslicka");
 
     ErrorResponseModel response = step("Make request", () ->
-            given(loginRequestSpec)
+            given(requestSpec)
                     .body(authData)
+                    .contentType(JSON)
                     .when()
-                    .post()
+                    .post("/login")
                     .then()
-                    .spec(loginResponseStatus400Spec)
+                    .spec(responseSpecStatusCode(400))
                     .extract().as(ErrorResponseModel.class));
     step("Check response", () ->
             assertThat(response.getError(), is("Missing email or username")));
@@ -125,12 +121,13 @@ public class LoginTests extends TestBase {
   void wrongBodyTest() {
     String authData = "%}";
     Response response = step("Make request", () ->
-            given(loginRequestSpec)
+            given(requestSpec)
                     .body(authData)
+                    .contentType(JSON)
                     .when()
-                    .post()
+                    .post("/login")
                     .then()
-                    .spec(loginResponseStatus400Spec)
+                    .spec(responseSpecStatusCode(400))
                     .extract().response());
   }
 
@@ -138,11 +135,11 @@ public class LoginTests extends TestBase {
   @Test
   void missingRequestBodyTest() {
     Response response = step("Make request", () ->
-            given(loginRequestSpecWithoutContentType)
+            given(requestSpec)
                     .when()
-                    .post()
+                    .post("/login")
                     .then()
-                    .spec(loginResponseStatus415Spec)
+                    .spec(responseSpecStatusCode(415))
                     .extract().response());
   }
 }

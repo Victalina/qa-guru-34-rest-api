@@ -9,13 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
+import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static specs.CreateUserSpec.createUserRequestSpec;
-import static specs.CreateUserSpec.createUserResponseSpec;
-import static specs.DeleteUserSpec.deleteUserRequestSpec;
-import static specs.DeleteUserSpec.deleteUserResponseSpec;
+import static specs.Spec.requestSpec;
+import static specs.Spec.responseSpecStatusCode;
 
 @Tag("rest_api_tests")
 public class DeleteUserTests extends TestBase {
@@ -24,17 +23,16 @@ public class DeleteUserTests extends TestBase {
   @Test
   void deleteUserTest() {
 
-    UserBodyModel userData = new UserBodyModel();
-    userData.setName("Tom");
-    userData.setJob("leader");
+    UserBodyModel userData = new UserBodyModel("Tom", "leader");
 
     UserResponseModel response1 = step("Make request - create user", () ->
-            given(createUserRequestSpec)
+            given(requestSpec)
                     .body(userData)
+                    .contentType(JSON)
                     .when()
-                    .post()
+                    .post("/users")
                     .then()
-                    .spec(createUserResponseSpec)
+                    .spec(responseSpecStatusCode(201))
                     .extract().as(UserResponseModel.class));
 
     step("Check user creation response", () -> {
@@ -46,11 +44,11 @@ public class DeleteUserTests extends TestBase {
     int id = response1.getId();
 
     Response response2 = step("Make request - delete user with id = " + id, () ->
-            given(deleteUserRequestSpec)
+            given(requestSpec)
                     .when()
-                    .delete("/" + id)
+                    .delete("/users" + id)
                     .then()
-                    .spec(deleteUserResponseSpec)
+                    .spec(responseSpecStatusCode(204))
                     .extract().response());
   }
 }

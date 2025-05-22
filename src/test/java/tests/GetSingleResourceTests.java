@@ -10,7 +10,8 @@ import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static specs.GetResourceSpec.*;
+import static specs.Spec.requestSpec;
+import static specs.Spec.responseSpecStatusCode;
 
 @Tag("rest_api_tests")
 public class GetSingleResourceTests extends TestBase {
@@ -21,11 +22,11 @@ public class GetSingleResourceTests extends TestBase {
     int id = 2;
 
     ResourceDataModel response = step("Make request with resource id = " + id, () ->
-            given(getResourceRequestSpec)
+            given(requestSpec)
                     .when()
-                    .get("/" + id)
+                    .get("/unknown/" + id)
                     .then()
-                    .spec(getResourceResponseSpec)
+                    .spec(responseSpecStatusCode(200))
                     .extract().as(ResourceDataModel.class));
 
     step("Check response", () -> {
@@ -43,11 +44,11 @@ public class GetSingleResourceTests extends TestBase {
     int id = 23;
 
     Response response = step("Make request with resource id = " + id, () ->
-            given(getResourceRequestSpec)
+            given(requestSpec)
                     .when()
-                    .get("/" + id)
+                    .get("/unknown/" + id)
                     .then()
-                    .spec(resourceNotFoundResponseSpec)
+                    .spec(responseSpecStatusCode(404))
                     .extract().response());
   }
 }

@@ -10,7 +10,8 @@ import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static specs.GetUserSpec.*;
+import static specs.Spec.requestSpec;
+import static specs.Spec.responseSpecStatusCode;
 
 @Tag("rest_api_tests")
 public class GetSingleUserTests extends TestBase {
@@ -21,11 +22,11 @@ public class GetSingleUserTests extends TestBase {
     int id = 2;
 
     UserDataModel response = step("Make request with user id = " + id, () ->
-            given(getUserRequestSpec)
+            given(requestSpec)
                     .when()
-                    .get("/" + id)
+                    .get("/users/" + id)
                     .then()
-                    .spec(getUserResponseSpec)
+                    .spec(responseSpecStatusCode(200))
                     .extract().as(UserDataModel.class));
 
     step("Check response", () -> {
@@ -43,11 +44,11 @@ public class GetSingleUserTests extends TestBase {
     int id = 23;
 
     Response response = step("Make request with user id = " + id, () ->
-            given(getUserRequestSpec)
+            given(requestSpec)
                     .when()
-                    .get("/" + id)
+                    .get("/users/" + id)
                     .then()
-                    .spec(userNotFoundResponseSpec)
+                    .spec(responseSpecStatusCode(404))
                     .extract().response());
   }
 }
